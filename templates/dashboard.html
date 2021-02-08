@@ -1,46 +1,99 @@
 {% extends  "layout.html" %}
 
 {% block content %}
+
+<script>
+$(document).ready(function() {
+    $("#Add_Stocks").click(function() {
+        $('.ui.modal').modal('show');
+    })
+
+    $("#save").click(function() {
+        var name = $("#name").val();
+        var stockNames = name.split("\n");
+        console.log(stockNames);
+        for(i = 0; i < stockNames.length; ++i) {
+            console.log(stockNames[i]);
+            $.ajax({
+                url: '/stockname',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({"stockname": stockNames[i]}),
+                dataType: 'json'
+            });
+        }
+
+        $('.ui.modal').modal('hide');
+    })
+});
+</script>
+<form>
 <div class="ui input">
-    <input type="text" placeholder="Dividend Yield">
+    <input name="forward_pe" type="text" placeholder="P/E ratio" value="{{ forward_pe or ''}}">
 </div>
 <div class="ui input">
-    <input type="text" placeholder="P/E ratio">
+    <input name="dividend_yield" type="text" placeholder="Dividend Yield" value="{{ dividend_yield or '' }}">
 </div>
 <div class="ui checkbox">
-    <input type="checkbox" name="example">
+    <input type="checkbox" name="example" {% if ma50 %}checked="checked"{% endif %}>
     <label>Above 50 day MA</label>
 </div>
 <div class="ui checkbox">
-    <input type="checkbox" name="example">
+    <input type="checkbox" name="example" {% if ma200 %}checked="checked"{% endif %}>
     <label>Above 200 day MA</label>
 </div>
-<button class="ui button primary">
+<button type="submit" class="ui button primary">
     Filter
 </button>
+</form>
+<div>
+    <button id="Add_Stocks" class="ui button">Add Stocks</button>
+</div>
+
 <table class="ui celled table">
     <thead>
       <tr>
             <th>StockName</th>
-            <th>P/E</th>
+            <th>Forward P/E</th>
             <th>Dividend Yield</th>
+            <th>Price</th>
+            <th>Forwards EPS</th>
+            <th>50 day</th>
+            <th>200 day</th>
     </tr></thead>
     <tbody>
+        {% for stocks in Stocks %}
       <tr>
-        <td data-label="Name">James</td>
-        <td data-label="Age">24</td>
-        <td data-label="Job">Engineer</td>
+        <td>{{ stocks.stockname }}</td>
+        <td>{{ stocks.forward_pe }}</td>
+        <td>{{ stocks.dividend_yield }}</td>
+        <td>{{ stocks.price }}</td>
+        <td>{{ stocks.forward_eps }}</td>
+        <td>{{ stocks.ma50 }}</td>
+        <td>{{ stocks.ma200 }}</td>
       </tr>
-      <tr>
-        <td data-label="Name">Jill</td>
-        <td data-label="Age">26</td>
-        <td data-label="Job">Engineer</td>
-      </tr>
-      <tr>
-        <td data-label="Name">Elyse</td>
-        <td data-label="Age">24</td>
-        <td data-label="Job">Designer</td>
-      </tr>
+      {% endfor %}
     </tbody>
   </table>
+
+  <div class="ui modal">
+    <i class="close icon"></i>
+    <div class="header">
+      Add Stock Name
+    </div>
+    <div class="image content">
+        <div class="ui form">
+            <div class="field">
+              <label>Enter Stock Name</label>
+              <textarea id="name"></textarea>
+            </div>
+        </div>
+    </div>
+    <div class="actions">
+      <div id="save" class="ui positive right labeled icon button">
+        Add Stock Name
+        <i class="plus icon"></i>
+      </div>
+    </div>
+  </div>
 {% endblock %}

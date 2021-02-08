@@ -38,13 +38,27 @@ def yahoo_data_fetch(id: int):
     db.commit()
 
 @app.get("/")
-def dashboard(request: Request):
+def dashboard(request: Request, forward_pe = None, dividend_yield = None, ma50 = None, ma200 = None, db: Session = Depends(get_db)):
     ''''''''''
     displays the dashboard
     '''''''''''
+    Stocks = db.query(StockData)
+    if forward_pe:
+        Stocks = Stocks.filter(StockData.forward_pe < forward_pe)
+    if dividend_yield:
+        Stocks = Stocks.filter(StockData.dividend_yield > dividend_yield)
+    if ma50:
+        Stocks = Stocks.filter(StockData.price > ma50)
+    if dividend_yield:
+        Stocks = Stocks.filter(StockData.price > ma200)
+
     return templates.TemplateResponse("dashboard.html",{
         "request": request,
-        "var": 2021
+        "Stocks": Stocks,
+        "dividend_yield": dividend_yield,
+        "forward_pe": forward_pe,
+        "ma200": ma200,
+        "ma50": ma50
     })
 
 @app.post("/stockname")
