@@ -7,6 +7,15 @@ from sqlalchemy.orm import Session
 from database import SessionLocal, engine
 from pydantic import BaseModel
 from dbmodels import StockData
+from twilio.rest import Client
+
+account = "###########"
+token = "###########"
+client = Client(account,token)
+
+client.region = 'us1'
+client.edge = 'ashburn'
+
 app = FastAPI()
 
 dbmodels.Base.metadata.create_all(bind=engine)
@@ -71,6 +80,7 @@ async def stockCreate(stock_req: StockReq, task_background : BackgroundTasks,db:
     db.add(stock)
     db.commit()
     task_background.add_task(yahoo_data_fetch, stock.id)
+    message = client.messages.create(to= "###########", from_ = "###########", body = "New Stock " + stock.stockname + " added")
     return{
         "code": "success",
         "message": "stock has been created"
